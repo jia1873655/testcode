@@ -1,0 +1,8 @@
+pytest==7.4.3
+pytest-assume==2.4.3
+allure-pytest==2.13.2
+allure-python-commons
+requests==2.31.0
+pyyaml==6.0.1
+python-dotenv==1.0.0
+urllib3

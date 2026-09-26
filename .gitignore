@@ -1,0 +1,17 @@
+.venv/
+.idea/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.DS_Store
+.env
+
+# 本地报告与日志
+reports/allure-results/
+reports/allure-report/
+reports/logs/
+*.log
+
+# 含真实 token，勿提交
+config/conf_crm_test.ini

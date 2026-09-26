@@ -1,0 +1,445 @@
+# CRM 接口自动化数据与断言
+# 来源：crm.openapi.json / 分页查询.openapi.json / 四个接口.json
+version: 1
+project: crm
+description: 客户详情/分页/状态日志 + 重复检查/待办角标/待办任务分页
+
+get_by_id:
+  path: /customer/get_by_id
+  method: GET
+  valid:
+    # 与 config [customer] id 一致时以配置为准；此处作为数据文件兜底
+    id: 1516
+    expected_http_status: 200
+    success_codes: [0, 200]
+    expected:
+      id: 1516
+    required_fields:
+      - id
+      - referrer_commission_basis
+      - referrer_commission_rate
+      - referrer_customer_id
+    field_types:
+      assignment_time: str
+      attachments: list
+      business_status: int
+      cannot_cooperate_reason: int
+      cannot_cooperate_remark: str
+      contact_number: str
+      create_time: str
+      customer_brand_website: str
+      customer_name: str
+      email: str
+      erp_id: str
+      estimated_level: str
+      follow_up_business_group_id: int
+      follow_up_sales_person_id: int
+      has_referrer: int
+      id: int
+      intended_product: str
+      is_customization_required: int
+      lead_source: int
+      lead_source_level2: int
+      merchant_id: str
+      order_system: int
+      ownership_status: int
+      product_link: str
+      referrer: str
+      referrer_code: str
+      referrer_remark: str
+      remark: str
+      shop_name: str
+      social_media_account: str
+      target_country: str
+      update_time: str
+      referrer_commission_basis: int
+      referrer_commission_rate: str
+      referrer_customer_id: str
+    attachment_item_fields:
+      - content_type
+      - file_size
+      - id
+      - is_image
+      - original_filename
+    attachment_item_types:
+      content_type: str
+      file_size: int
+      id: int
+      is_image: int
+      original_filename: str
+  not_found:
+    id: 999999999
+    expected_http_status: [400, 404, 500]
+  missing_id:
+    expected_http_status: [400, 500]
+  invalid_ids:
+    - id: 0
+      title: "客户详情 - id 为 0"
+      expected_http_status: [400, 500]
+    - id: -1
+      title: "客户详情 - id 为负数"
+      expected_http_status: [400, 500]
+    - id: abc
+      title: "客户详情 - id 为非数字"
+      expected_http_status: [400, 500]
+
+page_query:
+  path: /customer/page_query
+  method: POST
+  success_codes: [0, 200]
+  expected_http_status: 200
+  response_fields:
+    - list
+    - page
+    - page_size
+    - total
+  list_item_required_fields:
+    - id
+    - customer_name
+  list_item_field_types:
+    id: int
+    customer_name: str
+    contact_number: str
+    email: str
+    business_status: int
+    ownership_status: int
+    lead_source: int
+    create_source: int
+    follow_up_business_group_id: int
+    follow_up_sales_person_id: int
+    has_referrer: int
+    merchant_id: str
+    create_time: str
+    tags: list
+  valid:
+    scene: 5
+    customer_name: ""
+    lead_source: 0
+    estimated_level: ""
+    ownership_status: 0
+    business_status: 0
+    follow_up_business_group_id: 0
+    follow_up_sales_person_id: 0
+    create_time_range:
+      start: "2026-03-01T00:00:00+08:00"
+      end: "2026-09-30T23:59:59+08:00"
+    page: 1
+    page_size: 20
+  filter_by_name:
+    scene: 5
+    page: 1
+    page_size: 20
+    create_time_range:
+      start: "2026-03-01T00:00:00+08:00"
+      end: "2026-09-30T23:59:59+08:00"
+  empty_result:
+    scene: 5
+    page: 1
+    page_size: 20
+    create_time_range:
+      start: "2026-03-01T00:00:00+08:00"
+      end: "2026-09-30T23:59:59+08:00"
+  missing_scene:
+    page: 1
+    page_size: 20
+  invalid_page_size:
+    scene: 5
+    page: 1
+    page_size: 0
+    create_time_range:
+      start: "2026-03-01T00:00:00+08:00"
+      end: "2026-09-30T23:59:59+08:00"
+
+business_status_log:
+  path: /customer/business_status_log/list
+  method: GET
+  success_codes: [0, 200]
+  expected_http_status: 200
+  response_fields:
+    - customer_id
+    - customer_name
+    - list
+  list_item_field_types:
+    business_status: int
+    create_time: str
+    operator_id: int
+  not_found:
+    id: 999999999
+  missing_id: {}
+
+ownership_status_log:
+  path: /customer/ownership_status_log/list
+  method: GET
+  success_codes: [0, 200]
+  expected_http_status: 200
+  response_fields:
+    - customer_id
+    - customer_name
+    - list
+  list_item_field_types:
+    create_time: str
+    operator_id: int
+    ownership_group_id: int
+    ownership_group_name: str
+    ownership_person_id: int
+    ownership_status: int
+  not_found:
+    id: 999999999
+  missing_id: {}
+
+duplicate_check:
+  path: /customer/duplicate_check
+  method: POST
+  success_codes: [0, 200]
+  expected_http_status: 200
+  response_fields:
+    - is_duplicated
+  field_types:
+    is_duplicated: bool
+  # check_type: 1 联系号码，2 邮箱
+  empty_value:
+    check_type: 1
+    value: ""
+    expected_is_duplicated: false
+  unique_phone:
+    check_type: 1
+    value: "19900001111"
+    expected_is_duplicated: false
+  unique_email:
+    check_type: 2
+    value: "__autotest_no_such_email_xyz@example.com"
+    expected_is_duplicated: false
+  # 正例：从 get_by_id 提取已有联系方式后断言 is_duplicated=true
+  from_existing_customer:
+    check_type_phone: 1
+    check_type_email: 2
+
+pending_task_badge:
+  path: /customer/pending_task_badge
+  method: GET
+  success_codes: [0, 200]
+  expected_http_status: 200
+  response_fields:
+    - pending_link_count
+    - pending_website_count
+    - pending_store_count
+  field_types:
+    pending_link_count: int
+    pending_website_count: int
+    pending_store_count: int
+  # OpenAPI：scope=mine 时官网待审与绑店待确认固定为 0
+  mine_fixed_zero_fields:
+    - pending_website_count
+    - pending_store_count
+  invalid_scope: __invalid_scope__
+
+pending_link_task:
+  path: /pending_link_task/page_query
+  method: POST
+  success_codes: [0, 200]
+  expected_http_status: 200
+  response_fields:
+    - list
+    - page
+    - page_size
+    - total
+  list_item_required_fields:
+    - id
+    - customer_name
+  list_item_field_types:
+    id: int
+    customer_id: str
+    customer_name: str
+    source: int
+    status: int
+    create_time: str
+    business_manager_id: int
+    business_group_id: int
+    crm_customer_id: int
+  valid_all_link:
+    page: 1
+    page_size: 20
+    scope: all
+    source: 1
+  valid_all_website:
+    page: 1
+    page_size: 20
+    scope: all
+    source: 2
+  valid_mine:
+    page: 1
+    page_size: 20
+    scope: mine
+  missing_scope:
+    page: 1
+    page_size: 20
+  all_missing_source:
+    page: 1
+    page_size: 20
+    scope: all
+
+pending_store_task:
+  path: /pending_store_task/page_query
+  method: POST
+  success_codes: [0, 200]
+  expected_http_status: 200
+  response_fields:
+    - list
+    - page
+    - page_size
+    - total
+  list_item_required_fields:
+    - id
+    - shop_name
+  list_item_field_types:
+    id: int
+    shop_name: str
+    email: str
+    status: int
+    create_time: str
+    crm_customer_id: int
+    follow_up_sales_person_id: int
+    follow_up_business_group_id: int
+  valid:
+    page: 1
+    page_size: 20
+  empty_result:
+    page: 1
+    page_size: 20
+    shop_name: __autotest_no_such_shop_xyz__
+  invalid_status:
+    page: 1
+    page_size: 20
+    status: 99
+
+link_search:
+  path: /customer/link_search
+  method: POST
+  success_codes: [0, 200]
+  expected_http_status: 200
+  response_fields:
+    - list
+    - page
+    - page_size
+    - total
+  list_item_required_fields:
+    - id
+    - customer_name
+  list_item_field_types:
+    id: int
+    customer_name: str
+    email: str
+    contact_number: str
+    merchant_id: str
+    business_status: int
+    create_source: int
+    follow_up_sales_person_id: int
+    follow_up_business_group_id: int
+    follow_up_business_group_name: str
+  valid_all:
+    scope: all
+    page: 1
+    page_size: 20
+    customer_name: 测试090103
+  valid_mine:
+    scope: mine
+    page: 1
+    page_size: 20
+    customer_name: 测试
+  empty_result:
+    scope: all
+    page: 1
+    page_size: 20
+    customer_name: __autotest_no_such_customer_xyz__
+  missing_scope:
+    page: 1
+    page_size: 20
+    customer_name: 测试
+  missing_filter:
+    scope: all
+    page: 1
+    page_size: 20
+  invalid_scope:
+    scope: __invalid_scope__
+    page: 1
+    page_size: 20
+    customer_name: 测试
+
+attachment_list_pending:
+  path: /customer/attachment/list_pending
+  method: GET
+  success_codes: [0, 200]
+  expected_http_status: 200
+  response_fields:
+    - list
+  list_item_field_types:
+    id: int
+    content_type: str
+    file_size: int
+    is_image: int
+    original_filename: str
+  valid:
+    draft_id: autotest-empty-draft
+  missing_draft_id: {}
+
+activity_record:
+  path_prefix: /customer_activity_record
+  success_codes: [0, 200]
+  expected_http_status: 200
+  create:
+    path: /customer_activity_record/create
+    # customer_id / source 以 conf [activity_record] 为准
+    source: 2
+    content_prefix: "autotest-activity"
+    tags:
+      - 自动化
+      - 待回访
+    response_fields:
+      - id
+      - create_time
+      - create_user
+  update:
+    path: /customer_activity_record/update
+    content_suffix: "-updated"
+    tags:
+      - 重点
+    response_fields:
+      - id
+      - update_time
+      - update_user
+  delete:
+    path: /customer_activity_record/delete
+    response_fields:
+      - id
+  list:
+    path: /customer_activity_record/list
+    page: 1
+    page_size: 20
+    response_fields:
+      - list
+      - total
+      - page
+      - page_size
+    list_item_field_types:
+      id: int
+      customer_id: str
+      source: int
+      content: str
+      tags: list
+      create_time: str
+      create_user: int
+      create_user_name: str
+  get_by_id:
+    path: /customer_activity_record/get_by_id
+    response_fields:
+      - id
+      - customer_id
+      - source
+      - content
+      - tags
+      - create_time
+      - create_user
+    not_found_id: 999999999
+  missing_customer_id:
+    source: 2
+    content: "缺少客户id应失败"

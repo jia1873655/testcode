@@ -1,0 +1,61 @@
+# CRM 测试环境配置
+# 接口来源：crm.openapi.json
+# Token 失效时优先用环境变量 CRM_TOKEN / CRM_HOST 覆盖，不必改文件。
+
+[env]
+# 测试环境域名，不要带 path；path_prefix 单独配置
+host = https://crm-api.bestfulfill.top
+path_prefix = /api/v1
+# OpenAPI Authorization 头；直接写 JWT，不要加引号
+token =
+
+[customer]
+# 详情 / 状态日志查询使用的客户主键。OpenAPI example 为 130；测试环境近期可用 ID 为 1516
+id = 1516
+not_found_id = 999999999
+
+[page_query]
+# scene=5 全部客户；时间范围与 OpenAPI example 对齐
+scene = 5
+page = 1
+page_size = 20
+create_time_start = 2026-03-01T00:00:00+08:00
+create_time_end = 2026-09-30T23:59:59+08:00
+# 模糊筛选：用详情接口已验证存在的客户名
+customer_name = 测试090103
+# 空结果用的客户名
+empty_customer_name = __autotest_no_such_customer_xyz__
+
+[pending_task_badge]
+# mine=我的客户；all=全部客户
+scope_mine = mine
+scope_all = all
+
+[pending_link_task]
+# scope=all 时 source 必填：1 BPS创建待关联，2 官网待审
+scope = all
+source = 1
+page = 1
+page_size = 20
+
+[pending_store_task]
+page = 1
+page_size = 20
+
+[link_search]
+# scope=all|mine；至少再填客户名/联系方式/邮箱/跟进人/业务状态之一
+scope = all
+page = 1
+page_size = 20
+customer_name = 测试090103
+empty_customer_name = __autotest_no_such_customer_xyz__
+
+[attachment]
+# 待绑定列表按 draft_id 查当前用户暂存附件；无上传时 list 可为 null/[]
+draft_id = autotest-empty-draft
+
+[activity_record]
+# create 的 customer_id 是全量客户 ID（字符串），对应详情里的 merchant_id
+customer_id = 15007
+# source: 1 BPS，2 CRM，3 飞书
+source = 2
